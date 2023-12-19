@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEngine.Serialization;
-using Vector2 = System.Numerics.Vector2;
 
 namespace ImGuiNET.Unity
 {
@@ -119,22 +118,22 @@ namespace ImGuiNET.Unity
         public unsafe void ApplyTo(ImGuiStylePtr s)
         {
             s.Alpha                  = Alpha;
-            s.WindowPadding          = WindowPadding;
+            s.WindowPadding          = ImGuiUn.CreateSysVec2(WindowPadding);
             s.WindowRounding         = WindowRounding;
             s.WindowBorderSize       = WindowBorderSize;
-            s.WindowMinSize          = WindowMinSize;
-            s.WindowTitleAlign       = WindowTitleAlign;
+            s.WindowMinSize          = ImGuiUn.CreateSysVec2(WindowMinSize);
+            s.WindowTitleAlign       = ImGuiUn.CreateSysVec2(WindowTitleAlign);
             s.WindowMenuButtonPosition = WindowMenuButtonPosition;
             s.ChildRounding          = ChildRounding;
             s.ChildBorderSize        = ChildBorderSize;
             s.PopupRounding          = PopupRounding;
             s.PopupBorderSize        = PopupBorderSize;
-            s.FramePadding           = FramePadding;
+            s.FramePadding           = ImGuiUn.CreateSysVec2(FramePadding);
             s.FrameRounding          = FrameRounding;
             s.FrameBorderSize        = FrameBorderSize;
-            s.ItemSpacing            = ItemSpacing;
-            s.ItemInnerSpacing       = ItemInnerSpacing;
-            s.TouchExtraPadding      = TouchExtraPadding;
+            s.ItemSpacing            = ImGuiUn.CreateSysVec2(ItemSpacing);
+            s.ItemInnerSpacing       = ImGuiUn.CreateSysVec2(ItemInnerSpacing);
+            s.TouchExtraPadding      = ImGuiUn.CreateSysVec2(TouchExtraPadding);
             s.IndentSpacing          = IndentSpacing;
             s.ColumnsMinSpacing      = ColumnsMinSpacing;
             s.ScrollbarSize          = ScrollbarSize;
@@ -144,10 +143,10 @@ namespace ImGuiNET.Unity
             s.TabRounding            = TabRounding;
             s.TabBorderSize          = TabBorderSize;
             s.ColorButtonPosition    = ColorButtonPosition;
-            s.ButtonTextAlign        = ButtonTextAlign;
-            s.SelectableTextAlign    = SelectableTextAlign;
-            s.DisplayWindowPadding   = DisplayWindowPadding;
-            s.DisplaySafeAreaPadding = DisplaySafeAreaPadding;
+            s.ButtonTextAlign        = ImGuiUn.CreateSysVec2(ButtonTextAlign);
+            s.SelectableTextAlign    = ImGuiUn.CreateSysVec2(SelectableTextAlign);
+            s.DisplayWindowPadding   = ImGuiUn.CreateSysVec2(DisplayWindowPadding);
+            s.DisplaySafeAreaPadding = ImGuiUn.CreateSysVec2(DisplaySafeAreaPadding);
             s.MouseCursorScale       = MouseCursorScale;
             s.AntiAliasedLines       = AntiAliasedLines;
             s.AntiAliasedFill        = AntiAliasedFill;
@@ -160,22 +159,22 @@ namespace ImGuiNET.Unity
         public unsafe void SetFrom(ImGuiStylePtr s)
         {
             Alpha                  = s.Alpha;
-            WindowPadding          = s.WindowPadding;
+            WindowPadding          = ImGuiUn.CreateUnityVec2(s.WindowPadding);
             WindowRounding         = s.WindowRounding;
             WindowBorderSize       = s.WindowBorderSize;
-            WindowMinSize          = s.WindowMinSize;
-            WindowTitleAlign       = s.WindowTitleAlign;
+            WindowMinSize          = ImGuiUn.CreateUnityVec2(s.WindowMinSize);
+            WindowTitleAlign       = ImGuiUn.CreateUnityVec2(s.WindowTitleAlign);
             WindowMenuButtonPosition = s.WindowMenuButtonPosition;
             ChildRounding          = s.ChildRounding;
             ChildBorderSize        = s.ChildBorderSize;
             PopupRounding          = s.PopupRounding;
             PopupBorderSize        = s.PopupBorderSize;
-            FramePadding           = s.FramePadding;
+            FramePadding           = ImGuiUn.CreateUnityVec2(s.FramePadding);
             FrameRounding          = s.FrameRounding;
             FrameBorderSize        = s.FrameBorderSize;
-            ItemSpacing            = s.ItemSpacing;
-            ItemInnerSpacing       = s.ItemInnerSpacing;
-            TouchExtraPadding      = s.TouchExtraPadding;
+            ItemSpacing            = ImGuiUn.CreateUnityVec2(s.ItemSpacing);
+            ItemInnerSpacing       = ImGuiUn.CreateUnityVec2(s.ItemInnerSpacing);
+            TouchExtraPadding      = ImGuiUn.CreateUnityVec2(s.TouchExtraPadding);
             IndentSpacing          = s.IndentSpacing;
             ColumnsMinSpacing      = s.ColumnsMinSpacing;
             ScrollbarSize          = s.ScrollbarSize;
@@ -185,10 +184,10 @@ namespace ImGuiNET.Unity
             TabRounding            = s.TabRounding;
             TabBorderSize          = s.TabBorderSize;
             ColorButtonPosition    = s.ColorButtonPosition;
-            ButtonTextAlign        = s.ButtonTextAlign;
-            SelectableTextAlign    = s.SelectableTextAlign;
-            DisplayWindowPadding   = s.DisplayWindowPadding;
-            DisplaySafeAreaPadding = s.DisplaySafeAreaPadding;
+            ButtonTextAlign        = ImGuiUn.CreateUnityVec2(s.ButtonTextAlign);
+            SelectableTextAlign    = ImGuiUn.CreateUnityVec2(s.SelectableTextAlign);
+            DisplayWindowPadding   = ImGuiUn.CreateUnityVec2(s.DisplayWindowPadding);
+            DisplaySafeAreaPadding = ImGuiUn.CreateUnityVec2(s.DisplaySafeAreaPadding);
             MouseCursorScale       = s.MouseCursorScale;
             AntiAliasedLines       = s.AntiAliasedLines;
             AntiAliasedFill        = s.AntiAliasedFill;
