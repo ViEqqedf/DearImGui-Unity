@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using ImGuiNET;
+using ImGuiNET.Unity;
 using UnityEngine;
 
 public class ImguiTest : MonoBehaviour {

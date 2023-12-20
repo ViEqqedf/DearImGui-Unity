@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
-namespace ImGuiNET {
+namespace ImGuiNET.Unity {
     // ImGui extra functionality related with integrating with Unity
     public static partial class ImGuiUnity {
         // convert from ImGui coordinates (origin at top left) to unity's screen coordinates (origin at bottom left)

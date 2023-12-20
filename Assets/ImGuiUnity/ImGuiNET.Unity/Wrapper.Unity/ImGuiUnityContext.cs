@@ -2,7 +2,7 @@
 using UnityEngine;
 using ImGuiNET.Unity;
 
-namespace ImGuiNET {
+namespace ImGuiNET.Unity {
     sealed class ImGuiUnityContext {
         public IntPtr state;            // ImGui internal state
         public TextureManager textures; // texture / font state
