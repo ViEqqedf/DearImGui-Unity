@@ -4,60 +4,42 @@ using UnityEngine;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 
-namespace ImGuiNET.Unity
-{
-    class SpriteInfo
-    {
+namespace ImGuiNET.Unity {
+    public class SpriteInfo {
         public Texture texture;
         public Vector2 size;
         public Vector2 uv0, uv1;
     }
 
-    class TextureManager
-    {
-        Texture2D _atlasTex;
-        int _currentTextureId;
-        readonly Dictionary<int, Texture> _textures = new Dictionary<int, Texture>();
-        readonly Dictionary<Texture, int> _textureIds = new Dictionary<Texture, int>();
-        readonly Dictionary<Sprite, SpriteInfo> _spriteData = new Dictionary<Sprite, SpriteInfo>();
-        readonly HashSet<IntPtr> _allocatedGlyphRangeArrays = new HashSet<IntPtr>(IntPtrEqualityComparer.Instance);
+    public class TextureManager {
+        private Texture2D atlasTex;
+        private int currentTextureId;
+        private readonly Dictionary<int, Texture> textures = new Dictionary<int, Texture>();
+        private readonly Dictionary<Texture, int> textureIds = new Dictionary<Texture, int>();
+        private readonly Dictionary<Sprite, SpriteInfo> spriteData = new Dictionary<Sprite, SpriteInfo>();
+        private readonly HashSet<IntPtr> allocatedGlyphRangeArrays = new HashSet<IntPtr>(IntPtrEqualityComparer.Instance);
 
-        public void PrepareFrame(ImGuiIOPtr io)
-        {
-            _currentTextureId = 0;
-            _textures.Clear();
-            _textureIds.Clear();
-            int id = RegisterTexture(_atlasTex);
+        public void PrepareFrame(ImGuiIOPtr io) {
+            currentTextureId = 0;
+            textures.Clear();
+            textureIds.Clear();
+            int id = RegisterTexture(atlasTex);
             io.Fonts.SetTexID((IntPtr)id);
         }
 
-        int RegisterTexture(Texture texture)
-        {
-            _textures[++_currentTextureId] = texture;
-            _textureIds[texture] = _currentTextureId;
-            return _currentTextureId;
-        }
-
-        public Texture GetTexture(int id)
-        {
-            _textures.TryGetValue(id, out Texture texture);
+        public Texture GetTexture(int id) {
+            textures.TryGetValue(id, out Texture texture);
             return texture;
         }
 
-        public int GetTextureId(Texture texture)
-        {
-            return _textureIds.TryGetValue(texture, out int id)
-                ? id
-                : RegisterTexture(texture);
+        public int GetTextureId(Texture texture) {
+            return textureIds.TryGetValue(texture, out int id) ? id : RegisterTexture(texture);
         }
 
-        public SpriteInfo GetSpriteInfo(Sprite sprite)
-        {
-            if (!_spriteData.TryGetValue(sprite, out SpriteInfo sprInfo))
-            {
+        public SpriteInfo GetSpriteInfo(Sprite sprite) {
+            if (!spriteData.TryGetValue(sprite, out SpriteInfo sprInfo)) {
                 Vector2[] uvs = sprite.uv; // allocates
-                _spriteData[sprite] = sprInfo = new SpriteInfo
-                {
+                spriteData[sprite] = sprInfo = new SpriteInfo {
                     texture = sprite.texture,
                     size = sprite.rect.size,
                     uv0 = new Vector2(uvs[0].x, 1f - uvs[0].y),
@@ -67,51 +49,59 @@ namespace ImGuiNET.Unity
             return sprInfo;
         }
 
-        unsafe IntPtr AllocateGlyphRangeArray(in FontConfig fontConfig)
-        {
+        private int RegisterTexture(Texture texture) {
+            textures[++currentTextureId] = texture;
+            textureIds[texture] = currentTextureId;
+            return currentTextureId;
+        }
+
+        private unsafe IntPtr AllocateGlyphRangeArray(in FontConfig fontConfig) {
             var values = fontConfig.BuildRanges();
-            if (values.Count == 0)
+            if (values.Count == 0) {
                 return IntPtr.Zero;
+            }
 
             int byteCount = sizeof(ushort) * (values.Count + 1); // terminating zero
             var ranges = (ushort*)Util.Allocate(byteCount);
-            _allocatedGlyphRangeArrays.Add((IntPtr)ranges);
-            for (var i = 0; i < values.Count; ++i)
+            allocatedGlyphRangeArrays.Add((IntPtr)ranges);
+
+            for (var i = 0; i < values.Count; ++i) {
                 ranges[i] = values[i];
+            }
+
             ranges[values.Count] = 0;
             return (IntPtr)ranges;
         }
 
-        unsafe void FreeGlyphRangeArrays()
-        {
-            foreach (var range in _allocatedGlyphRangeArrays)
+        private unsafe void FreeGlyphRangeArrays() {
+            foreach (var range in allocatedGlyphRangeArrays) {
                 Util.Free((byte*)range);
-            _allocatedGlyphRangeArrays.Clear();
+            }
+
+            allocatedGlyphRangeArrays.Clear();
         }
 
-        public unsafe void BuildFontAtlas(ImGuiIOPtr io, in FontAtlasConfigAsset settings)
-        {
-            if (io.Fonts.IsBuilt())
+        internal unsafe void BuildFontAtlas(ImGuiIOPtr io, in FontAtlasConfigAsset settings) {
+            if (io.Fonts.IsBuilt()) {
                 DestroyFontAtlas(io);
+            }
 
             // don't add cursors if not drawing them
-            if (!io.MouseDrawCursor)
+            if (!io.MouseDrawCursor) {
                 io.Fonts.Flags |= ImFontAtlasFlags.NoMouseCursors;
+            }
 
             // no font config asset: use defaults
-            if (settings == null)
-            {
+            if (settings == null) {
                 io.Fonts.AddFontDefault();
                 io.Fonts.Build();
                 return;
             }
 
             // add fonts from config asset
-            foreach (var fontDefinition in settings.Fonts)
-            {
+            foreach (var fontDefinition in settings.Fonts) {
                 var fontPath = System.IO.Path.Combine(Application.streamingAssetsPath, fontDefinition.FontPath);
-                if (!System.IO.File.Exists(fontPath))
-                {
+                if (!System.IO.File.Exists(fontPath)) {
                     Debug.Log($"Font file not found: {fontPath}");
                     continue;
                 }
@@ -123,11 +113,11 @@ namespace ImGuiNET.Unity
                 io.Fonts.AddFontFromFileTTF(fontPath, fontDefinition.Config.SizeInPixels, fontConfigPtr);
             }
 
-            if (io.Fonts.Fonts.Size == 0)
+            if (io.Fonts.Fonts.Size == 0) {
                 io.Fonts.AddFontDefault();
+            }
 
-            switch (settings.Rasterizer)
-            {
+            switch (settings.Rasterizer) {
                 case FontRasterizerType.StbTrueType:
                     io.Fonts.Build();
                     break;
@@ -143,31 +133,30 @@ namespace ImGuiNET.Unity
             }
         }
 
-        public unsafe void DestroyFontAtlas(ImGuiIOPtr io)
-        {
+        public unsafe void DestroyFontAtlas(ImGuiIOPtr io) {
             FreeGlyphRangeArrays();
 
             io.Fonts.Clear(); // previous FontDefault reference no longer valid
             io.NativePtr->FontDefault = default; // NULL uses Fonts[0]
         }
 
-        public void Initialize(ImGuiIOPtr io)
-        {
+        public void Initialize(ImGuiIOPtr io) {
             // load and register font atlas
-            _atlasTex = CreateAtlasTexture(io.Fonts);
+            atlasTex = CreateAtlasTexture(io.Fonts);
         }
 
-        public void Shutdown()
-        {
-            _currentTextureId = 0;
-            _textures.Clear();
-            _textureIds.Clear();
-            _spriteData.Clear();
-            if (_atlasTex != null) { GameObject.Destroy(_atlasTex); _atlasTex = null; }
+        public void Shutdown() {
+            currentTextureId = 0;
+            textures.Clear();
+            textureIds.Clear();
+            spriteData.Clear();
+
+            if (atlasTex != null) {
+                GameObject.Destroy(atlasTex); atlasTex = null;
+            }
         }
 
-        unsafe Texture2D CreateAtlasTexture(ImFontAtlasPtr atlas)
-        {
+        private unsafe Texture2D CreateAtlasTexture(ImFontAtlasPtr atlas) {
             atlas.GetTexDataAsRGBA32(out byte* pixels, out int width, out int height, out int bytesPerPixel);
             var atlasTexture = new Texture2D(width, height, TextureFormat.RGBA32, false, false) { filterMode = FilterMode.Point };
 
@@ -179,8 +168,11 @@ namespace ImGuiNET.Unity
             // invert y while copying the atlas texture
             NativeArray<byte> dstData = atlasTexture.GetRawTextureData<byte>();
             int stride = width * bytesPerPixel;
-            for (int y = 0; y < height; ++y)
+
+            for (int y = 0; y < height; ++y) {
                 NativeArray<byte>.Copy(srcData, y * stride, dstData, (height - y - 1) * stride, stride);
+            }
+
             atlasTexture.Apply();
 
             return atlasTexture;

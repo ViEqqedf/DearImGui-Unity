@@ -7,83 +7,94 @@ namespace ImGuiNET.Unity.Editor
     [CustomEditor(typeof(DearImGui))]
     class DearImGuiEditor : UnityEditor.Editor
     {
-        SerializedProperty _doGlobalLayout;
+        private SerializedProperty doGlobalLayout;
 
-        SerializedProperty _camera;
-        SerializedProperty _renderFeature;
+        private SerializedProperty guiCamera;
+        private SerializedProperty renderFeature;
 
-        SerializedProperty _renderer;
-        SerializedProperty _platform;
+        private SerializedProperty rendererType;
+        private SerializedProperty platform;
 
-        SerializedProperty _initialConfiguration;
-        SerializedProperty _fontAtlasConfiguration;
-        SerializedProperty _iniSettings;
+        private SerializedProperty initialConfiguration;
+        private SerializedProperty fontAtlasConfiguration;
+        private SerializedProperty iniSettings;
 
-        SerializedProperty _shaders;
-        SerializedProperty _style;
-        SerializedProperty _cursorShapes;
+        private SerializedProperty shaders;
+        private SerializedProperty style;
+        private SerializedProperty cursorShapes;
 
-        readonly StringBuilder _messages = new StringBuilder();
+        private readonly StringBuilder messages = new StringBuilder();
 
-        void OnEnable()
-        {
-            _doGlobalLayout = serializedObject.FindProperty("_doGlobalLayout");
-            _camera = serializedObject.FindProperty("_camera");
-            _renderFeature = serializedObject.FindProperty("_renderFeature");
-            _renderer = serializedObject.FindProperty("_rendererType");
-            _platform = serializedObject.FindProperty("_platformType");
-            _initialConfiguration = serializedObject.FindProperty("_initialConfiguration");
-            _fontAtlasConfiguration = serializedObject.FindProperty("_fontAtlasConfiguration");
-            _iniSettings = serializedObject.FindProperty("_iniSettings");
-            _shaders = serializedObject.FindProperty("_shaders");
-            _style = serializedObject.FindProperty("_style");
-            _cursorShapes = serializedObject.FindProperty("_cursorShapes");
+        private void OnEnable() {
+            doGlobalLayout = serializedObject.FindProperty("doGlobalLayout");
+            guiCamera = serializedObject.FindProperty("guiCamera");
+            renderFeature = serializedObject.FindProperty("renderFeature");
+            rendererType = serializedObject.FindProperty("rendererType");
+            platform = serializedObject.FindProperty("platformType");
+            initialConfiguration = serializedObject.FindProperty("initialConfiguration");
+            fontAtlasConfiguration = serializedObject.FindProperty("fontAtlasConfiguration");
+            iniSettings = serializedObject.FindProperty("iniSettings");
+            shaders = serializedObject.FindProperty("shaders");
+            style = serializedObject.FindProperty("style");
+            cursorShapes = serializedObject.FindProperty("cursorShapes");
         }
 
-        public override void OnInspectorGUI()
-        {
+        public override void OnInspectorGUI() {
             serializedObject.Update();
 
             CheckRequirements();
 
             EditorGUI.BeginChangeCheck();
 
-            EditorGUILayout.PropertyField(_doGlobalLayout);
-            if (RenderUtils.IsUsingURP())
-                EditorGUILayout.PropertyField(_renderFeature);
-            EditorGUILayout.PropertyField(_camera);
-            EditorGUILayout.PropertyField(_renderer);
-            EditorGUILayout.PropertyField(_platform);
-            EditorGUILayout.PropertyField(_initialConfiguration);
-            EditorGUILayout.PropertyField(_fontAtlasConfiguration);
-            EditorGUILayout.PropertyField(_iniSettings);
-            EditorGUILayout.PropertyField(_shaders);
-            EditorGUILayout.PropertyField(_style);
-            EditorGUILayout.PropertyField(_cursorShapes);
+            EditorGUILayout.PropertyField(doGlobalLayout);
+
+            if (RenderUtils.IsUsingURP()) {
+                EditorGUILayout.PropertyField(renderFeature);
+            }
+
+            EditorGUILayout.PropertyField(guiCamera);
+            EditorGUILayout.PropertyField(rendererType);
+            EditorGUILayout.PropertyField(platform);
+            EditorGUILayout.PropertyField(initialConfiguration);
+            EditorGUILayout.PropertyField(fontAtlasConfiguration);
+            EditorGUILayout.PropertyField(iniSettings);
+            EditorGUILayout.PropertyField(shaders);
+            EditorGUILayout.PropertyField(style);
+            EditorGUILayout.PropertyField(cursorShapes);
 
             var changed = EditorGUI.EndChangeCheck();
-            if (changed)
+            if (changed) {
                 serializedObject.ApplyModifiedProperties();
+            }
 
-            if (!Application.isPlaying)
+            if (!Application.isPlaying) {
                 return;
+            }
 
             var reload = GUILayout.Button("Reload");
-            if (changed || reload)
+            if (changed || reload) {
                 (target as DearImGui)?.Reload();
+            }
         }
 
-        void CheckRequirements()
-        {
-            _messages.Clear();
-            if (_camera.objectReferenceValue == null)
-                _messages.AppendLine("Must assign a Camera.");
-            if (RenderUtils.IsUsingURP() && _renderFeature.objectReferenceValue == null)
-                _messages.AppendLine("Must assign a RenderFeature when using the URP.");
-            if (!Platform.IsAvailable((Platform.Type)_platform.enumValueIndex))
-                _messages.AppendLine("Platform not available.");
-            if (_messages.Length > 0)
-                EditorGUILayout.HelpBox(_messages.ToString(), MessageType.Error);
+        private void CheckRequirements() {
+            messages.Clear();
+
+            if (guiCamera.objectReferenceValue == null) {
+                messages.AppendLine("Must assign a Camera.");
+            }
+
+            if (RenderUtils.IsUsingURP() && renderFeature.objectReferenceValue == null) {
+                messages.AppendLine("Must assign a RenderFeature when using the URP.");
+            }
+
+            if (!Platform.IsAvailable((Platform.Type)platform.enumValueIndex)) {
+                messages.AppendLine("Platform not available.");
+            }
+
+            if (messages.Length > 0) {
+                EditorGUILayout.HelpBox(messages.ToString(), MessageType.Error);
+            }
         }
     }
 }

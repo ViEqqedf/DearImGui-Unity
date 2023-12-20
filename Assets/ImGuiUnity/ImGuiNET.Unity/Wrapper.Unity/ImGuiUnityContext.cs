@@ -2,16 +2,13 @@
 using UnityEngine;
 using ImGuiNET.Unity;
 
-namespace ImGuiNET
-{
-    sealed class ImGuiUnityContext
-    {
+namespace ImGuiNET {
+    sealed class ImGuiUnityContext {
         public IntPtr state;            // ImGui internal state
         public TextureManager textures; // texture / font state
     }
 
-    public static unsafe partial class ImGuiUn
-    {
+    public static unsafe partial class ImGuiUnity {
         // layout
         public static event Action Layout;    // global/default Layout event, each DearImGui instance also has a private one
         internal static void DoLayout() => Layout?.Invoke();
@@ -22,22 +19,18 @@ namespace ImGuiNET
 
         internal static ImGuiUnityContext s_currentUnityContext;
 
-        internal static ImGuiUnityContext CreateUnityContext()
-        {
-            return new ImGuiUnityContext
-            {
+        internal static ImGuiUnityContext CreateUnityContext() {
+            return new ImGuiUnityContext {
                 state = ImGui.CreateContext(),
                 textures = new TextureManager(),
             };
         }
 
-        internal static void DestroyUnityContext(ImGuiUnityContext context)
-        {
+        internal static void DestroyUnityContext(ImGuiUnityContext context) {
             ImGui.DestroyContext(context.state);
         }
 
-        internal static void SetUnityContext(ImGuiUnityContext context)
-        {
+        internal static void SetUnityContext(ImGuiUnityContext context) {
             s_currentUnityContext = context;
             ImGui.SetCurrentContext(context?.state ?? IntPtr.Zero);
         }

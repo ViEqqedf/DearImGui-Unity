@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace ImGuiNET.Unity
 {
@@ -8,19 +9,16 @@ namespace ImGuiNET.Unity
     /// Used to store ImGui Ini settings in an asset instead of the default imgui.ini file
     /// </summary>
     [CreateAssetMenu(menuName = "Dear ImGui/Ini Settings")]
-    sealed class IniSettingsAsset : ScriptableObject
-    {
+    public sealed class IniSettingsAsset : ScriptableObject {
         [TextArea(3, 20)]
-        [SerializeField] string _data;
+        [SerializeField] private string data;
 
-        public void Save(string data)
-        {
-            _data = data;
+        public void Save(string data) {
+            this.data = data;
         }
 
-        public string Load()
-        {
-            return _data;
+        public string Load() {
+            return data;
         }
     }
 }

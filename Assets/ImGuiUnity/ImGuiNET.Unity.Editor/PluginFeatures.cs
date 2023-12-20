@@ -4,11 +4,9 @@ using System.Runtime.InteropServices;
 using UnityEditor;
 using UnityEngine;
 
-namespace ImGuiNET.Unity.Editor
-{
+namespace ImGuiNET.Unity.Editor {
     // Define the availability of extra features of the native plugin through compile time symbols.
-    sealed class PluginFeatures
-    {
+    internal sealed class PluginFeatures {
         // TODO:[ViE] confirm annotation
         // [InitializeOnLoadMethod]
         // static void CheckScriptingDefineSymbols()
@@ -38,12 +36,12 @@ namespace ImGuiNET.Unity.Editor
         // }
 
         [UnityEditor.Callbacks.DidReloadScripts]
-        static void DoPluginChecks()
-        {
-            if (EditorApplication.isPlayingOrWillChangePlaymode) return;
+        private static void DoPluginChecks() {
+            if (EditorApplication.isPlayingOrWillChangePlaymode) {
+                return;
+            }
 
-            try
-            {
+            try {
                 // check if the data layout of structures in the wrapper match the plugin
                 if (!ImGui.DebugCheckVersionAndDataLayout(
                     ImGui.GetVersion(),
@@ -52,16 +50,13 @@ namespace ImGuiNET.Unity.Editor
                     (uint)Marshal.SizeOf<Vector2>(),
                     (uint)Marshal.SizeOf<Vector4>(),
                     (uint)Marshal.SizeOf<ImDrawVert>(),
-                    sizeof(ushort)))
-                {
+                    sizeof(ushort))) {
                     Debug.LogWarning("[DearImGui] Data layout mismatch.");
                     Debug.Log(MarshalledOffsets<ImGuiIO>());
                     Debug.Log(MarshalledOffsets<ImGuiStyle>());
                     Debug.Log(MarshalledOffsets<ImDrawVert>());
                 }
-            }
-            catch (DllNotFoundException)
-            {
+            } catch (DllNotFoundException) {
                 Debug.LogWarning("[DearImGui] Could not check data layout, native plugin not loaded.");
             }
         }
@@ -69,32 +64,27 @@ namespace ImGuiNET.Unity.Editor
         // TODO:[ViE] confirm annotation
         // static bool HasCustomAssert() => CheckMethod(typeof(CustomAssertNative).GetMethod(nameof(CustomAssertNative.PluginLogAssert)));
         // static bool HasFreetype() => CheckMethod(typeof(ImFreetypeNative).GetMethod(nameof(ImFreetypeNative.frBuildFontAtlas)));
-        static bool CheckMethod(System.Reflection.MethodInfo method)
-        {
-            try
-            {
+        private static bool CheckMethod(System.Reflection.MethodInfo method) {
+            try {
                 Marshal.Prelink(method);
                 return true;
-            }
-            catch
-            {
+            } catch {
                 return false;
             }
         }
 
-        static unsafe string MarshalledOffsets<T>()
-        {
+        private static unsafe string MarshalledOffsets<T>() {
             var sb = new System.Text.StringBuilder();
             var structSize = Marshal.SizeOf<T>();
             sb.AppendLine($"{typeof(T).Name} size: {structSize}");
 
             var fieldNames = typeof(T).GetFields().Select(f => f.Name).ToArray();
-            for (var i = 0; i < fieldNames.Length; ++i)
-            {
+            for (var i = 0; i < fieldNames.Length; ++i) {
                 var offset = (int)Marshal.OffsetOf<T>(fieldNames[i]);
                 var offsetNext = i == fieldNames.Length - 1 ? structSize : (int)Marshal.OffsetOf<T>(fieldNames[i + 1]);
                 sb.AppendLine($"{fieldNames[i],-24} {offset,4} {offsetNext - offset,4}");
             }
+
             return sb.ToString();
         }
     }

@@ -1,15 +1,12 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace ImGuiNET.Unity.Editor
-{
+namespace ImGuiNET.Unity.Editor {
     [CustomPropertyDrawer(typeof(FontDefinition))]
-    class FontDefinitionDrawer : PropertyDrawer
-    {
-        const string EditorStreamingAssetsPath = "Assets/StreamingAssets/";
+    internal class FontDefinitionDrawer : PropertyDrawer {
+        private const string EditorStreamingAssetsPath = "Assets/StreamingAssets/";
 
-        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
-        {
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label) {
             var fontPath = property.FindPropertyRelative(nameof(FontDefinition.FontPath));
             var config = property.FindPropertyRelative(nameof(FontDefinition.Config));
 
@@ -24,8 +21,7 @@ namespace ImGuiNET.Unity.Editor
             return height;
         }
 
-        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
-        {
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
             var fontAsset = property.FindPropertyRelative("_fontAsset");
             var fontPath = property.FindPropertyRelative(nameof(FontDefinition.FontPath));
             var config = property.FindPropertyRelative(nameof(FontDefinition.Config));
@@ -34,14 +30,11 @@ namespace ImGuiNET.Unity.Editor
             EditorGUI.PropertyField(position, fontAsset);
             fontPath.stringValue = GetStreamingAssetPath(fontAsset);
 
-            if (string.IsNullOrEmpty(fontPath.stringValue))
-            {
+            if (string.IsNullOrEmpty(fontPath.stringValue)) {
                 position.y = position.yMax + EditorGUIUtility.standardVerticalSpacing;
                 position.height = EditorGUIUtility.singleLineHeight * 2;
                 EditorGUI.HelpBox(position, $"Font file must be in '{EditorStreamingAssetsPath}' folder.", MessageType.Error);
-            }
-            else
-            {
+            } else {
                 position.y = position.yMax + EditorGUIUtility.standardVerticalSpacing;
                 position.height = EditorGUIUtility.singleLineHeight;
 
@@ -56,8 +49,7 @@ namespace ImGuiNET.Unity.Editor
             }
         }
 
-        string GetStreamingAssetPath(SerializedProperty property)
-        {
+        string GetStreamingAssetPath(SerializedProperty property) {
             string path = property.objectReferenceValue != null
                 ? AssetDatabase.GetAssetPath(property.objectReferenceValue.GetInstanceID())
                 : string.Empty;

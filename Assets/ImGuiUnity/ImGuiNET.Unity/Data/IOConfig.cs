@@ -1,10 +1,8 @@
 using UnityEngine;
 
-namespace ImGuiNET.Unity
-{
+namespace ImGuiNET.Unity {
     [System.Serializable]
-    struct IOConfig
-    {
+    public struct IOConfig {
         [Tooltip("Enable keyboard navigation.")]
         public bool KeyboardNavigation;
 
@@ -50,16 +48,14 @@ namespace ImGuiNET.Unity
         [Tooltip("[BETA] Compact window memory usage when unused. Set to -1.0f to disable.")]
         public float MemoryCompactTimer;
 
-        public void SetDefaults()
-        {
+        public void SetDefaults() {
             var context = ImGui.CreateContext();
             ImGui.SetCurrentContext(context);
             SetFrom(ImGui.GetIO());
             ImGui.DestroyContext(context);
         }
 
-        public void ApplyTo(ImGuiIOPtr io)
-        {
+        public void ApplyTo(ImGuiIOPtr io) {
             io.ConfigFlags = KeyboardNavigation ? io.ConfigFlags | ImGuiConfigFlags.NavEnableKeyboard : io.ConfigFlags & ~ImGuiConfigFlags.NavEnableKeyboard;
             io.ConfigFlags = GamepadNavigation ? io.ConfigFlags | ImGuiConfigFlags.NavEnableGamepad : io.ConfigFlags & ~ImGuiConfigFlags.NavEnableGamepad;
             io.ConfigFlags = NavSetMousePos ? io.ConfigFlags | ImGuiConfigFlags.NavEnableSetMousePos : io.ConfigFlags & ~ImGuiConfigFlags.NavEnableSetMousePos;
@@ -77,8 +73,7 @@ namespace ImGuiNET.Unity
             io.ConfigMemoryCompactTimer = MemoryCompactTimer;
         }
 
-        public void SetFrom(ImGuiIOPtr io)
-        {
+        public void SetFrom(ImGuiIOPtr io) {
             KeyboardNavigation = (io.ConfigFlags & ImGuiConfigFlags.NavEnableKeyboard) != 0;
             GamepadNavigation = (io.ConfigFlags & ImGuiConfigFlags.NavEnableGamepad) != 0;
             NavSetMousePos = (io.ConfigFlags & ImGuiConfigFlags.NavEnableSetMousePos) != 0;

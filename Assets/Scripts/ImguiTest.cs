@@ -6,11 +6,11 @@ using UnityEngine;
 
 public class ImguiTest : MonoBehaviour {
     private void OnEnable() {
-        ImGuiUn.Layout += OnLayout;
+        ImGuiUnity.Layout += OnLayout;
     }
 
     private void OnDisable() {
-        ImGuiUn.Layout -= OnLayout;
+        ImGuiUnity.Layout -= OnLayout;
     }
 
     private void OnLayout() {

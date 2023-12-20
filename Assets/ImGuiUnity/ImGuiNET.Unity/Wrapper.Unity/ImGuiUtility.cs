@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 namespace ImGuiNET {
-    public static partial class ImGuiUn {
+    public static partial class ImGuiUnity {
         public static System.Numerics.Vector2 CreateSysVec2(float x, float y) {
             return new System.Numerics.Vector2(x, y);
         }

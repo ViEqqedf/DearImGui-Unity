@@ -6,8 +6,7 @@ using UnityEngine.Assertions;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
 
-namespace ImGuiNET.Unity
-{
+namespace ImGuiNET.Unity {
     // Implemented features:
     // [x] Platform: Clipboard support.
     // [x] Platform: Mouse cursor shape and visibility. Disable with io.ConfigFlags |= ImGuiConfigFlags.NoMouseCursorChange.
@@ -19,8 +18,7 @@ namespace ImGuiNET.Unity
     /// <summary>
     /// Platform bindings for ImGui in Unity in charge of: mouse/keyboard/gamepad inputs, cursor shape, timing, windowing.
     /// </summary>
-    sealed class ImGuiPlatformInputSystem : IImGuiPlatform
-    {
+    public sealed class ImGuiPlatformInputSystem : IImGuiPlatform {
         int[] _mainKeys;                                                        // main keys
         readonly List<char> _textInput = new List<char>();                      // accumulate text input
 
@@ -30,8 +28,7 @@ namespace ImGuiNET.Unity
 
         readonly IniSettingsAsset _iniSettings;                                 // ini settings data
 
-        readonly PlatformCallbacks _callbacks = new PlatformCallbacks
-        {
+        readonly PlatformCallbacks _callbacks = new PlatformCallbacks {
             GetClipboardText = (_) => GUIUtility.systemCopyBuffer,
             SetClipboardText = (_, text) => GUIUtility.systemCopyBuffer = text,
 #if IMGUI_FEATURE_CUSTOM_ASSERT
@@ -40,15 +37,13 @@ namespace ImGuiNET.Unity
 #endif
         };
 
-        public ImGuiPlatformInputSystem(CursorShapesAsset cursorShapes, IniSettingsAsset iniSettings)
-        {
+        public ImGuiPlatformInputSystem(CursorShapesAsset cursorShapes, IniSettingsAsset iniSettings) {
             _cursorShapes = cursorShapes;
             _iniSettings = iniSettings;
             _callbacks.ImeSetInputScreenPos = (x, y) => _keyboard.SetIMECursorPosition(new Vector2(x, y));
         }
 
-        public bool Initialize(ImGuiIOPtr io)
-        {
+        public bool Initialize(ImGuiIOPtr io) {
             InputSystem.onDeviceChange += OnDeviceChange;                       // listen to keyboard device and layout changes
 
             io.SetBackendPlatformName("Unity Input System");                    // setup backend info and capabilities
@@ -70,16 +65,14 @@ namespace ImGuiNET.Unity
             return true;
         }
 
-        public void Shutdown(ImGuiIOPtr io)
-        {
+        public void Shutdown(ImGuiIOPtr io) {
             _callbacks.Unset(io);
             io.SetBackendPlatformName(null);
 
             InputSystem.onDeviceChange -= OnDeviceChange;
         }
 
-        public void PrepareFrame(ImGuiIOPtr io, Rect displayRect)
-        {
+        public void PrepareFrame(ImGuiIOPtr io, Rect displayRect) {
             Assert.IsTrue(io.Fonts.IsBuilt(), "Font atlas not built! Generally built by the renderer. Missing call to renderer NewFrame() function?");
 
             io.DisplaySize = new Vector2(displayRect.width, displayRect.height);// setup display size (every frame to accommodate for window resizing)
@@ -101,8 +94,7 @@ namespace ImGuiNET.Unity
             }
         }
 
-        void SetupKeyboard(ImGuiIOPtr io, Keyboard kb)
-        {
+        private void SetupKeyboard(ImGuiIOPtr io, Keyboard kb) {
             if (_keyboard != null)
             {
                 for (int i = 0; i < (int)ImGuiKey.COUNT; ++i)
@@ -140,8 +132,7 @@ namespace ImGuiNET.Unity
             _keyboard.onTextInput += _textInput.Add;
         }
 
-        void UpdateKeyboard(ImGuiIOPtr io, Keyboard keyboard)
-        {
+        private void UpdateKeyboard(ImGuiIOPtr io, Keyboard keyboard) {
             if (keyboard == null)
                 return;
 
@@ -161,8 +152,7 @@ namespace ImGuiNET.Unity
             _textInput.Clear();
         }
 
-        static void UpdateMouse(ImGuiIOPtr io, Mouse mouse)
-        {
+        private static void UpdateMouse(ImGuiIOPtr io, Mouse mouse) {
             if (mouse == null)
                 return;
 
@@ -180,8 +170,7 @@ namespace ImGuiNET.Unity
             io.MouseDown[2] = mouse.middleButton.isPressed;
         }
 
-        static void UpdateGamepad(ImGuiIOPtr io, Gamepad gamepad)
-        {
+        private static void UpdateGamepad(ImGuiIOPtr io, Gamepad gamepad) {
             io.BackendFlags = gamepad == null
                 ? io.BackendFlags & ~ImGuiBackendFlags.HasGamepad
                 : io.BackendFlags |  ImGuiBackendFlags.HasGamepad;
@@ -207,8 +196,7 @@ namespace ImGuiNET.Unity
             io.NavInputs[(int)ImGuiNavInput.LStickDown ] = gamepad.leftStick.down.ReadValue();
         }
 
-        void UpdateCursor(ImGuiIOPtr io, ImGuiMouseCursor cursor)
-        {
+        private void UpdateCursor(ImGuiIOPtr io, ImGuiMouseCursor cursor) {
             if (io.MouseDrawCursor)
                 cursor = ImGuiMouseCursor.None;
 
@@ -223,10 +211,8 @@ namespace ImGuiNET.Unity
                 Cursor.SetCursor(_cursorShapes[cursor].texture, _cursorShapes[cursor].hotspot, CursorMode.Auto);
         }
 
-        void OnDeviceChange(InputDevice device, InputDeviceChange change)
-        {
-            if (device is Keyboard kb)
-            {
+        private void OnDeviceChange(InputDevice device, InputDeviceChange change) {
+            if (device is Keyboard kb) {
                 if (change == InputDeviceChange.ConfigurationChanged)           // keyboard layout change, remap main keys
                     SetupKeyboard(ImGui.GetIO(), kb);
                 if (Keyboard.current != _keyboard)                              // keyboard device changed, setup again

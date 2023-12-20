@@ -1,11 +1,10 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
-namespace ImGuiNET.Unity
-{
+namespace ImGuiNET.Unity {
     [System.Serializable]
-    struct FontDefinition
-    {
-        [SerializeField] Object _fontAsset; // to drag'n'drop file from the inspector
+    internal struct FontDefinition {
+        [SerializeField] private Object fontAsset; // to drag'n'drop file from the inspector
         public string FontPath;
         public FontConfig Config;
     }

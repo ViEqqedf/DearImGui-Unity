@@ -1,17 +1,14 @@
 using UnityEngine;
 
-namespace ImGuiNET.Unity
-{
+namespace ImGuiNET.Unity {
     [CreateAssetMenu(menuName = "Dear ImGui/Font Atlas Configuration")]
-    sealed class FontAtlasConfigAsset : ScriptableObject
-    {
+    internal sealed class FontAtlasConfigAsset : ScriptableObject {
         public FontRasterizerType Rasterizer;
         public uint RasterizerFlags;
         public FontDefinition[] Fonts;
     }
 
-    enum FontRasterizerType
-    {
+    internal enum FontRasterizerType {
         StbTrueType,
         FreeType,
     }

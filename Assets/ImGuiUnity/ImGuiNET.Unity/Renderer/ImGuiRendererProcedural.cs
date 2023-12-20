@@ -1,50 +1,51 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Runtime.InteropServices;
+using UnityEngine;
 using UnityEngine.Rendering;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Profiling;
+using Object = UnityEngine.Object;
 
 // TODO: switch from using ComputeBuffer to GraphicsBuffer
 // starting from 2020.1 API that takes ComputeBuffer can also take GraphicsBuffer
 // https://docs.unity3d.com/2020.1/Documentation/ScriptReference/GraphicsBuffer.Target.html
 
-namespace ImGuiNET.Unity
-{
+namespace ImGuiNET.Unity {
     /// <summary>
     /// Renderer bindings in charge of producing instructions for rendering ImGui draw data.
     /// Uses DrawProceduralIndirect to build geometry from a buffer of vertex data.
     /// </summary>
     /// <remarks>Requires shader model 4.5 level hardware.</remarks>
-    sealed class ImGuiRendererProcedural : IImGuiRenderer
-    {
-        readonly Shader _shader;
-        readonly int _texID;
-        readonly int _verticesID;
-        readonly int _baseVertexID;
+    public sealed class ImGuiRendererProcedural : IImGuiRenderer {
+        private readonly Shader shader;
+        private readonly int texID;
+        private readonly int verticesID;
+        private readonly int baseVertexID;
 
-        Material _material;
-        readonly MaterialPropertyBlock _properties = new MaterialPropertyBlock();
+        private Material material;
+        private readonly MaterialPropertyBlock properties = new MaterialPropertyBlock();
 
-        readonly TextureManager _texManager;
+        private readonly TextureManager texManager;
 
-        ComputeBuffer _vtxBuf;                                                  // gpu buffer for vertex data
-        GraphicsBuffer _idxBuf;                                                 // gpu buffer for indexes
-        ComputeBuffer _argBuf;                                                  // gpu buffer for draw arguments
-        readonly int[] _drawArgs = new int[] { 0, 1, 0, 0, 0 };                 // used to build argument buffer
+        private ComputeBuffer vtxBuf;                                                  // gpu buffer for vertex data
+        private GraphicsBuffer idxBuf;                                                 // gpu buffer for indexes
+        private ComputeBuffer argBuf;                                                  // gpu buffer for draw arguments
+        private readonly int[] drawArgs = new int[] { 0, 1, 0, 0, 0 };                 // used to build argument buffer
 
-        static readonly ProfilerMarker s_updateBuffersPerfMarker = new ProfilerMarker("DearImGui.RendererProcedural.UpdateBuffers");
-        static readonly ProfilerMarker s_createDrawComandsPerfMarker = new ProfilerMarker("DearImGui.RendererProcedural.CreateDrawCommands");
+        private static readonly ProfilerMarker s_updateBuffersPerfMarker = new ProfilerMarker("DearImGui.RendererProcedural.UpdateBuffers");
+        private static readonly ProfilerMarker s_createDrawComandsPerfMarker = new ProfilerMarker("DearImGui.RendererProcedural.CreateDrawCommands");
 
-        public ImGuiRendererProcedural(ShaderResourcesAsset resources, TextureManager texManager)
-        {
-            if (SystemInfo.graphicsShaderLevel < 45)
+        public ImGuiRendererProcedural(ShaderResourcesAsset resources, TextureManager texManager) {
+            if (SystemInfo.graphicsShaderLevel < 45) {
                 throw new System.Exception("Device not supported");
+            }
 
-            _shader = resources.shaders.procedural;
-            _texManager = texManager;
-            _texID = Shader.PropertyToID(resources.propertyNames.tex);
-            _verticesID = Shader.PropertyToID(resources.propertyNames.vertices);
-            _baseVertexID = Shader.PropertyToID(resources.propertyNames.baseVertex);
+            shader = resources.shaders.procedural;
+            this.texManager = texManager;
+            texID = Shader.PropertyToID(resources.propertyNames.tex);
+            verticesID = Shader.PropertyToID(resources.propertyNames.vertices);
+            baseVertexID = Shader.PropertyToID(resources.propertyNames.baseVertex);
         }
 
         public void Initialize(ImGuiIOPtr io)
@@ -53,25 +54,33 @@ namespace ImGuiNET.Unity
             // io.SetBackendRendererName("Unity Procedural");                      // setup renderer info and capabilities
             io.BackendFlags |= ImGuiBackendFlags.RendererHasVtxOffset;          // supports ImDrawCmd::VtxOffset to output large meshes while still using 16-bits indices
 
-            _material = new Material(_shader) { hideFlags = HideFlags.HideAndDontSave & ~HideFlags.DontUnloadUnusedAsset };
+            material = new Material(shader) {
+                hideFlags = HideFlags.HideAndDontSave & ~HideFlags.DontUnloadUnusedAsset
+            };
         }
 
-        public void Shutdown(ImGuiIOPtr io)
-        {
+        public void Shutdown(ImGuiIOPtr io) {
             // TODO:[ViE] allow to set backend renderer name
             // io.SetBackendRendererName(null);
 
-            if (_material != null) { Object.Destroy(_material); _material = null; }
-            _vtxBuf?.Release(); _vtxBuf = null;
-            _idxBuf?.Release(); _idxBuf = null;
-            _argBuf?.Release(); _argBuf = null;
+            if (material != null) {
+                Object.Destroy(material);
+                material = null;
+            }
+
+            vtxBuf?.Release();
+            vtxBuf = null;
+            idxBuf?.Release();
+            idxBuf = null;
+            argBuf?.Release();
+            argBuf = null;
         }
 
-        public void RenderDrawLists(CommandBuffer cmd, ImDrawDataPtr drawData)
-        {
-            Vector2 fbSize = ImGuiUn.CreateUnityVec2(drawData.DisplaySize * drawData.FramebufferScale);
-            if (fbSize.x <= 0f || fbSize.y <= 0f || drawData.TotalVtxCount == 0)
+        public void RenderDrawLists(CommandBuffer cmd, ImDrawDataPtr drawData) {
+            Vector2 fbSize = ImGuiUnity.CreateUnityVec2(drawData.DisplaySize * drawData.FramebufferScale);
+            if (fbSize.x <= 0f || fbSize.y <= 0f || drawData.TotalVtxCount == 0) {
                 return; // avoid rendering when minimized
+            }
 
             s_updateBuffersPerfMarker.Begin();
             UpdateBuffers(drawData);
@@ -84,45 +93,47 @@ namespace ImGuiNET.Unity
             cmd.EndSample("DearImGui.ExecuteDrawCommands");
         }
 
-        void CreateOrResizeVtxBuffer(ref ComputeBuffer buffer, int count)
-        {
+        void CreateOrResizeVtxBuffer(ref ComputeBuffer buffer, int count) {
             int num = ((count - 1) / 256 + 1) * 256;
             buffer?.Release();
             buffer = new ComputeBuffer(num, UnsafeUtility.SizeOf<ImDrawVert>());
         }
-        void CreateOrResizeIdxBuffer(ref GraphicsBuffer buffer, int count)
-        {
+        void CreateOrResizeIdxBuffer(ref GraphicsBuffer buffer, int count) {
             int num = ((count - 1) / 256 + 1) * 256;
             buffer?.Release();
             buffer = new GraphicsBuffer(GraphicsBuffer.Target.Index, num, UnsafeUtility.SizeOf<ushort>());
         }
-        void CreateOrResizeArgBuffer(ref ComputeBuffer buffer, int count)
-        {
+        void CreateOrResizeArgBuffer(ref ComputeBuffer buffer, int count) {
             int num = ((count - 1) / 256 + 1) * 256;
             buffer?.Release();
             buffer = new ComputeBuffer(num, UnsafeUtility.SizeOf<int>(), ComputeBufferType.IndirectArguments);
         }
 
-        unsafe void UpdateBuffers(ImDrawDataPtr drawData)
-        {
+        unsafe void UpdateBuffers(ImDrawDataPtr drawData) {
             int drawArgCount = 0; // nr of drawArgs is the same as the nr of ImDrawCmd
-            for (int n = 0, nMax = drawData.CmdListsCount; n < nMax; ++n)
+            for (int n = 0, nMax = drawData.CmdListsCount; n < nMax; ++n) {
                 drawArgCount += drawData.CmdLists[n].CmdBuffer.Size;
+            }
 
             // create or resize vertex/index buffers
-            if (_vtxBuf == null || _vtxBuf.count < drawData.TotalVtxCount)
-                CreateOrResizeVtxBuffer(ref _vtxBuf, drawData.TotalVtxCount);
-            if (_idxBuf == null || _idxBuf.count < drawData.TotalIdxCount)
-                CreateOrResizeIdxBuffer(ref _idxBuf, drawData.TotalIdxCount);
-            if (_argBuf == null || _argBuf.count < drawArgCount * 5)
-                CreateOrResizeArgBuffer(ref _argBuf, drawArgCount * 5);
+            if (vtxBuf == null || vtxBuf.count < drawData.TotalVtxCount) {
+                CreateOrResizeVtxBuffer(ref vtxBuf, drawData.TotalVtxCount);
+            }
+
+            if (idxBuf == null || idxBuf.count < drawData.TotalIdxCount) {
+                CreateOrResizeIdxBuffer(ref idxBuf, drawData.TotalIdxCount);
+            }
+
+            if (argBuf == null || argBuf.count < drawArgCount * 5) {
+                CreateOrResizeArgBuffer(ref argBuf, drawArgCount * 5);
+            }
 
             // upload vertex/index data into buffers
             int vtxOf = 0;
             int idxOf = 0;
             int argOf = 0;
-            for (int n = 0, nMax = drawData.CmdListsCount; n < nMax; ++n)
-            {
+
+            for (int n = 0, nMax = drawData.CmdListsCount; n < nMax; ++n) {
                 ImDrawListPtr drawList = drawData.CmdLists[n];
                 NativeArray<ImDrawVert> vtxArray = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<ImDrawVert>(
                     (void*)drawList.VtxBuffer.Data, drawList.VtxBuffer.Size, Allocator.None);
@@ -134,32 +145,31 @@ namespace ImGuiNET.Unity
                 NativeArrayUnsafeUtility.SetAtomicSafetyHandle(ref idxArray, AtomicSafetyHandle.GetTempMemoryHandle());
 #endif
                 // upload vertex/index data
-                _vtxBuf.SetData(vtxArray, 0, vtxOf, vtxArray.Length);
-                _idxBuf.SetData(idxArray, 0, idxOf, idxArray.Length);
+                vtxBuf.SetData(vtxArray, 0, vtxOf, vtxArray.Length);
+                idxBuf.SetData(idxArray, 0, idxOf, idxArray.Length);
 
                 // arguments for indexed draw
-                _drawArgs[3] = vtxOf;                                           // base vertex location
-                for (int i = 0, iMax = drawList.CmdBuffer.Size; i < iMax; ++i)
-                {
+                drawArgs[3] = vtxOf;                                           // base vertex location
+                for (int i = 0, iMax = drawList.CmdBuffer.Size; i < iMax; ++i) {
                     ImDrawCmdPtr cmd = drawList.CmdBuffer[i];
-                    _drawArgs[0] = (int)cmd.ElemCount;                          // index count per instance
-                    _drawArgs[2] = idxOf + (int)cmd.IdxOffset;                  // start index location
-                    _argBuf.SetData(_drawArgs, 0, argOf, 5);
+                    drawArgs[0] = (int)cmd.ElemCount;                          // index count per instance
+                    drawArgs[2] = idxOf + (int)cmd.IdxOffset;                  // start index location
+                    argBuf.SetData(drawArgs, 0, argOf, 5);
 
                     argOf += 5;                                                 // 5 int for each cmd
                 }
+
                 vtxOf += vtxArray.Length;
                 idxOf += idxArray.Length;
             }
         }
 
-        void CreateDrawCommands(CommandBuffer cmd, ImDrawDataPtr drawData, Vector2 fbSize)
-        {
+        void CreateDrawCommands(CommandBuffer cmd, ImDrawDataPtr drawData, Vector2 fbSize) {
             var prevTextureId = System.IntPtr.Zero;
-            var clipOffst = new Vector4(drawData.DisplayPos.X, drawData.DisplayPos.Y, drawData.DisplayPos.X, drawData.DisplayPos.Y);
+            var clipOffset = new Vector4(drawData.DisplayPos.X, drawData.DisplayPos.Y, drawData.DisplayPos.X, drawData.DisplayPos.Y);
             var clipScale = new Vector4(drawData.FramebufferScale.X, drawData.FramebufferScale.Y, drawData.FramebufferScale.X, drawData.FramebufferScale.Y);
 
-            _material.SetBuffer(_verticesID, _vtxBuf);                          // bind vertex buffer
+            material.SetBuffer(verticesID, vtxBuf);                          // bind vertex buffer
 
             cmd.SetViewport(new Rect(0f, 0f, fbSize.x, fbSize.y));
             cmd.SetViewProjectionMatrices(
@@ -168,27 +178,29 @@ namespace ImGuiNET.Unity
 
             int vtxOf = 0;
             int argOf = 0;
-            for (int n = 0, nMax = drawData.CmdListsCount; n < nMax; ++n)
-            {
+            for (int n = 0, nMax = drawData.CmdListsCount; n < nMax; ++n) {
                 ImDrawListPtr drawList = drawData.CmdLists[n];
-                for (int i = 0, iMax = drawList.CmdBuffer.Size; i < iMax; ++i, argOf += 5 * 4)
-                {
+                for (int i = 0, iMax = drawList.CmdBuffer.Size; i < iMax; ++i, argOf += 5 * 4) {
                     ImDrawCmdPtr drawCmd = drawList.CmdBuffer[i];
                     // TODO: user callback in drawCmd.UserCallback & drawCmd.UserCallbackData
 
                     // project scissor rectangle into framebuffer space and skip if fully outside
-                    var clip = Vector4.Scale(ImGuiUn.CreateUnityVec4(drawCmd.ClipRect) - clipOffst, clipScale);
-                    if (clip.x >= fbSize.x || clip.y >= fbSize.y || clip.z < 0f || clip.w < 0f) continue;
+                    var clip = Vector4.Scale(ImGuiUnity.CreateUnityVec4(drawCmd.ClipRect) - clipOffset, clipScale);
+                    if (clip.x >= fbSize.x || clip.y >= fbSize.y || clip.z < 0f || clip.w < 0f) {
+                        continue;
+                    }
 
                     if (prevTextureId != drawCmd.TextureId)
-                        _properties.SetTexture(_texID, _texManager.GetTexture((int)(prevTextureId = drawCmd.TextureId)));
+                        properties.SetTexture(texID, texManager.GetTexture((int)(prevTextureId = drawCmd.TextureId)));
 
-                    _properties.SetInt(_baseVertexID, vtxOf + (int)drawCmd.VtxOffset); // base vertex location not automatically added to SV_VertexID
+                    properties.SetInt(baseVertexID, vtxOf + (int)drawCmd.VtxOffset); // base vertex location not automatically added to SV_VertexID
                     cmd.EnableScissorRect(new Rect(clip.x, fbSize.y - clip.w, clip.z - clip.x, clip.w - clip.y)); // invert y
-                    cmd.DrawProceduralIndirect(_idxBuf, Matrix4x4.identity, _material, -1, MeshTopology.Triangles, _argBuf, argOf, _properties);
+                    cmd.DrawProceduralIndirect(idxBuf, Matrix4x4.identity, material, -1, MeshTopology.Triangles, argBuf, argOf, properties);
                 }
+
                 vtxOf += drawList.VtxBuffer.Size;
             }
+
             cmd.DisableScissorRect();
         }
     }

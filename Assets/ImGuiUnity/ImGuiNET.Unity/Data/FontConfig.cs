@@ -2,11 +2,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using Vector2 = System.Numerics.Vector2;
 
-namespace ImGuiNET.Unity
-{
+namespace ImGuiNET.Unity {
     [System.Serializable]
-    struct FontConfig
-    {
+    internal struct FontConfig {
         [Tooltip("Index of font within TTF/OTF file.")]
         public int FontIndexInFile;
 
@@ -49,18 +47,15 @@ namespace ImGuiNET.Unity
         [Tooltip("User-provided list of Unicode range (2 value per range, values are inclusive).")]
         public Range[] CustomGlyphRanges;
 
-        public void SetDefaults()
-        {
-            unsafe
-            {
+        public void SetDefaults() {
+            unsafe {
                 ImFontConfig* imFontConfig = ImGuiNative.ImFontConfig_ImFontConfig();
                 SetFrom(imFontConfig);
                 ImGuiNative.ImFontConfig_destroy(imFontConfig);
             }
         }
 
-        public void ApplyTo(ImFontConfigPtr im)
-        {
+        public void ApplyTo(ImFontConfigPtr im) {
             im.FontNo = FontIndexInFile;
             im.SizePixels = SizeInPixels;
             im.OversampleH = Oversample.x;
@@ -80,8 +75,7 @@ namespace ImGuiNET.Unity
             // (see TextureManager)
         }
 
-        public void SetFrom(ImFontConfigPtr im)
-        {
+        public void SetFrom(ImFontConfigPtr im) {
             FontIndexInFile = im.FontNo;
             SizeInPixels = im.SizePixels;
             Oversample = new Vector2Int(im.OversampleH, im.OversampleV);
@@ -98,8 +92,7 @@ namespace ImGuiNET.Unity
             // no good way to set GlyphRanges, do manually
         }
 
-        public unsafe List<ushort> BuildRanges()
-        {
+        public unsafe List<ushort> BuildRanges() {
             var atlas = (ImFontAtlas*)0;
             var ranges = new List<ushort>();
             if ((GlyphRanges & ScriptGlyphRanges.Default) != 0)
@@ -126,8 +119,7 @@ namespace ImGuiNET.Unity
         }
 
         [System.Flags]
-        internal enum ScriptGlyphRanges
-        {
+        internal enum ScriptGlyphRanges {
             Default           = 1 << 0,
             Cyrillic          = 1 << 1,
             Japanese          = 1 << 2,
@@ -140,8 +132,7 @@ namespace ImGuiNET.Unity
         }
 
         [System.Serializable]
-        internal struct Range
-        {
+        internal struct Range {
             public ushort Start;
             public ushort End;
         }

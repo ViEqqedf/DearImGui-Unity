@@ -1,14 +1,11 @@
 ﻿using System;
 using UnityEngine;
 
-namespace ImGuiNET.Unity
-{
+namespace ImGuiNET.Unity {
     [CreateAssetMenu(menuName = "Dear ImGui/Cursor Shapes")]
-    sealed class CursorShapesAsset : ScriptableObject
-    {
+    public sealed class CursorShapesAsset : ScriptableObject {
         [Serializable]
-        public struct CursorShape
-        {
+        public struct CursorShape {
             public Texture2D texture;
             public Vector2 hotspot;
         }
@@ -40,12 +37,9 @@ namespace ImGuiNET.Unity
         [Tooltip("When hovering something with disabled interaction. Usually a crossed circle.")]
         public CursorShape NotAllowed;
 
-        public ref CursorShape this[ImGuiMouseCursor cursor]
-        {
-            get
-            {
-                switch (cursor)
-                {
+        public ref CursorShape this[ImGuiMouseCursor cursor] {
+            get {
+                switch (cursor) {
                     case ImGuiMouseCursor.Arrow:      return ref Arrow;
                     case ImGuiMouseCursor.TextInput:  return ref TextInput;
                     case ImGuiMouseCursor.ResizeAll:  return ref ResizeAll;

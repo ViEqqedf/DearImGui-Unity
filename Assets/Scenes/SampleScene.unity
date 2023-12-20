@@ -472,13 +472,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5fa779297770e0849864f782007007e3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _doGlobalLayout: 1
-  _camera: {fileID: 330585545}
-  _renderFeature: {fileID: 3566887962324104154, guid: c40be3174f62c4acf8c1216858c64956,
+  doGlobalLayout: 1
+  guiCamera: {fileID: 330585545}
+  renderFeature: {fileID: 3566887962324104154, guid: c40be3174f62c4acf8c1216858c64956,
     type: 2}
-  _rendererType: 0
-  _platformType: 0
-  _initialConfiguration:
+  rendererType: 0
+  platformType: 0
+  initialConfiguration:
     KeyboardNavigation: 0
     GamepadNavigation: 0
     NavSetMousePos: 0
@@ -491,14 +491,14 @@ MonoBehaviour:
     FontGlobalScale: 1
     FontAllowUserScaling: 0
     TextCursorBlink: 1
-    ResizeFromEdges: 1
+    ResizeFromEdges: 0
     MoveFromTitleOnly: 0
     MemoryCompactTimer: 60
-  _fontAtlasConfiguration: {fileID: 0}
-  _iniSettings: {fileID: 0}
-  _shaders: {fileID: 11400000, guid: 9c25b437bdcfe95449d0617c2f2ee93d, type: 2}
-  _style: {fileID: 11400000, guid: 2f5e7cc338c3ffc4caddb08baa576db2, type: 2}
-  _cursorShapes: {fileID: 11400000, guid: 79f57b40c6f98a5418bdf959f1061379, type: 2}
+  fontAtlasConfiguration: {fileID: 0}
+  iniSettings: {fileID: 0}
+  shaders: {fileID: 11400000, guid: 9c25b437bdcfe95449d0617c2f2ee93d, type: 2}
+  style: {fileID: 11400000, guid: 2f5e7cc338c3ffc4caddb08baa576db2, type: 2}
+  cursorShapes: {fileID: 11400000, guid: 79f57b40c6f98a5418bdf959f1061379, type: 2}
 --- !u!114 &1640253091
 MonoBehaviour:
   m_ObjectHideFlags: 0

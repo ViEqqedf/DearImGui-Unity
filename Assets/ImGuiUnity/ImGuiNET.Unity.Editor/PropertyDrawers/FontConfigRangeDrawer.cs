@@ -1,18 +1,16 @@
 ﻿using UnityEditor;
 using UnityEngine;
 
-namespace ImGuiNET.Unity.Editor
-{
+namespace ImGuiNET.Unity.Editor {
     [CustomPropertyDrawer(typeof(FontConfig.Range))]
-    class FontConfigRangeDrawer : PropertyDrawer
-    {
-        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
-        {
+    internal class FontConfigRangeDrawer : PropertyDrawer {
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
             SerializedProperty start = property.FindPropertyRelative(nameof(FontConfig.Range.Start));
             SerializedProperty end = property.FindPropertyRelative(nameof(FontConfig.Range.End));
 
-            if (start.intValue > end.intValue)
+            if (start.intValue > end.intValue) {
                 EditorGUI.DrawRect(position, new Color(1, 0, 0, 0.2f));
+            }
 
             label = EditorGUI.BeginProperty(position, label, property);
             Rect fieldPos = EditorGUI.PrefixLabel(position, label);
@@ -30,11 +28,13 @@ namespace ImGuiNET.Unity.Editor
 
             EditorGUI.EndProperty();
 
-            void DrawValue(Rect rect, SerializedProperty prop)
-            {
+            void DrawValue(Rect rect, SerializedProperty prop) {
                 Color prevBackgroundColor = GUI.backgroundColor;
-                if (prop.intValue <= 0)
+
+                if (prop.intValue <= 0) {
                     GUI.backgroundColor = Color.red;
+                }
+
                 EditorGUI.PropertyField(rect, prop, GUIContent.none);
                 GUI.backgroundColor = prevBackgroundColor;
             }
