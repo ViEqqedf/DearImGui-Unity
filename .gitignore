@@ -25,6 +25,9 @@
 # Jetbrains
 .idea/
 
+# Dear ImGui
+imgui.ini
+
 # Gradle cache directory
 .gradle/
 
