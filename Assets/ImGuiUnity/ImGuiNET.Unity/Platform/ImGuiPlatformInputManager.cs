@@ -16,7 +16,7 @@ namespace ImGuiNET.Unity {
     /// Platform bindings for ImGui in Unity in charge of: mouse/keyboard/gamepad inputs, cursor shape, timing, windowing.
     /// </summary>
     public sealed class ImGuiPlatformInputManager : IImGuiPlatform {
-        private Dictionary<ImGuiKey, KeyCode> mainKeys;                                                        // main keys
+        private Dictionary<ImGuiKey, Func<bool>> mainKeys;                                                        // main keys
         private readonly Event e = new Event();                                        // to get text input
 
         private readonly CursorShapesAsset cursorShapes;                               // cursor shape definitions
@@ -87,42 +87,40 @@ namespace ImGuiNET.Unity {
         }
 
         private void SetupKeyboard(ImGuiIOPtr io) {
-            mainKeys = new Dictionary<ImGuiKey, KeyCode>();
-            mainKeys.Add(ImGuiKey.Tab, KeyCode.Tab);
-            mainKeys.Add(ImGuiKey.LeftArrow, KeyCode.LeftArrow);
-            mainKeys.Add(ImGuiKey.RightArrow, KeyCode.RightArrow);
-            mainKeys.Add(ImGuiKey.UpArrow, KeyCode.UpArrow);
-            mainKeys.Add(ImGuiKey.DownArrow, KeyCode.DownArrow);
-            mainKeys.Add(ImGuiKey.PageUp, KeyCode.PageUp);
-            mainKeys.Add(ImGuiKey.PageDown, KeyCode.PageDown);
-            mainKeys.Add(ImGuiKey.Home, KeyCode.Home);
-            mainKeys.Add(ImGuiKey.End, KeyCode.End);
-            mainKeys.Add(ImGuiKey.Insert, KeyCode.Insert);
-            mainKeys.Add(ImGuiKey.Delete, KeyCode.Delete);
-            mainKeys.Add(ImGuiKey.Backspace, KeyCode.Backspace);
-            mainKeys.Add(ImGuiKey.Space, KeyCode.Space);
-            mainKeys.Add(ImGuiKey.Enter, KeyCode.Return);
-            mainKeys.Add(ImGuiKey.Escape, KeyCode.Escape);
-            mainKeys.Add(ImGuiKey.KeypadEnter, KeyCode.KeypadEnter);
-            mainKeys.Add(ImGuiKey.A, KeyCode.A);
-            mainKeys.Add(ImGuiKey.C, KeyCode.C);
-            mainKeys.Add(ImGuiKey.V, KeyCode.V);
-            mainKeys.Add(ImGuiKey.X, KeyCode.X);
-            mainKeys.Add(ImGuiKey.Y, KeyCode.Y);
-            mainKeys.Add(ImGuiKey.Z, KeyCode.Z);
+            mainKeys = new Dictionary<ImGuiKey, Func<bool>>();
+            mainKeys.Add(ImGuiKey.Tab, () => Input.GetKey(KeyCode.Tab));
+            mainKeys.Add(ImGuiKey.LeftArrow, () => Input.GetKey(KeyCode.LeftArrow));
+            mainKeys.Add(ImGuiKey.RightArrow, () => Input.GetKey(KeyCode.RightArrow));
+            mainKeys.Add(ImGuiKey.UpArrow, () => Input.GetKey(KeyCode.UpArrow));
+            mainKeys.Add(ImGuiKey.DownArrow, () => Input.GetKey(KeyCode.DownArrow));
+            mainKeys.Add(ImGuiKey.PageUp, () => Input.GetKey(KeyCode.PageUp));
+            mainKeys.Add(ImGuiKey.PageDown, () => Input.GetKey(KeyCode.PageDown));
+            mainKeys.Add(ImGuiKey.Home, () => Input.GetKey(KeyCode.Home));
+            mainKeys.Add(ImGuiKey.End, () => Input.GetKey(KeyCode.End));
+            mainKeys.Add(ImGuiKey.Insert, () => Input.GetKey(KeyCode.Insert));
+            mainKeys.Add(ImGuiKey.Delete, () => Input.GetKey(KeyCode.Delete));
+            mainKeys.Add(ImGuiKey.Backspace, () => Input.GetKey(KeyCode.Backspace));
+            mainKeys.Add(ImGuiKey.Space, () => Input.GetKey(KeyCode.Space));
+            mainKeys.Add(ImGuiKey.Enter, () => Input.GetKey(KeyCode.Return));
+            mainKeys.Add(ImGuiKey.Escape, () => Input.GetKey(KeyCode.Escape));
+            mainKeys.Add(ImGuiKey.KeypadEnter, () => Input.GetKey(KeyCode.KeypadEnter));
+            mainKeys.Add(ImGuiKey.ModShift, () => Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift));
+            mainKeys.Add(ImGuiKey.ModCtrl, () => Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl));
+            mainKeys.Add(ImGuiKey.ModAlt, () => Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt));
+            mainKeys.Add(ImGuiKey.ModSuper, () => Input.GetKey(KeyCode.LeftCommand) || Input.GetKey(KeyCode.RightCommand)
+                                               || Input.GetKey(KeyCode.LeftWindows) || Input.GetKey(KeyCode.RightWindows));
+            mainKeys.Add(ImGuiKey.A, () => Input.GetKey(KeyCode.A));
+            mainKeys.Add(ImGuiKey.C, () => Input.GetKey(KeyCode.C));
+            mainKeys.Add(ImGuiKey.V, () => Input.GetKey(KeyCode.V));
+            mainKeys.Add(ImGuiKey.X, () => Input.GetKey(KeyCode.X));
+            mainKeys.Add(ImGuiKey.Y, () => Input.GetKey(KeyCode.Y));
+            mainKeys.Add(ImGuiKey.Z, () => Input.GetKey(KeyCode.Z));
         }
 
         private void UpdateKeyboard(ImGuiIOPtr io) {
             foreach (var keyMapItem in mainKeys) {
-                io.AddKeyEvent(keyMapItem.Key, Input.GetKey(keyMapItem.Value));
+                io.AddKeyEvent(keyMapItem.Key, keyMapItem.Value.Invoke());
             }
-
-            // keyboard modifiers
-            io.KeyShift = Input.GetKey(KeyCode.LeftShift  ) || Input.GetKey(KeyCode.RightShift  );
-            io.KeyCtrl  = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-            io.KeyAlt   = Input.GetKey(KeyCode.LeftAlt    ) || Input.GetKey(KeyCode.RightAlt    );
-            io.KeySuper = Input.GetKey(KeyCode.LeftCommand) || Input.GetKey(KeyCode.RightCommand)
-                       || Input.GetKey(KeyCode.LeftWindows) || Input.GetKey(KeyCode.RightWindows);
 
             // text input
             while (Event.PopEvent(e)) {
