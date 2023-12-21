@@ -1,6 +1,8 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.Rendering;
 using Unity.Profiling;
+using UnityEditor;
 using UnityEngine.Serialization;
 
 namespace ImGuiNET.Unity {
@@ -29,6 +31,7 @@ namespace ImGuiNET.Unity {
 
         [Header("Configuration")]
         [SerializeField] private IOConfig initialConfiguration = default;
+        [SerializeField] private List<Object> fontList;
         [SerializeField] private FontAtlasConfigAsset fontAtlasConfiguration = null;
         [SerializeField] private IniSettingsAsset iniSettings = null;  // null: uses default imgui.ini file
 
@@ -42,20 +45,20 @@ namespace ImGuiNET.Unity {
         private static readonly ProfilerMarker s_layoutPerfMarker = new ProfilerMarker("DearImGui.Layout");
         private static readonly ProfilerMarker s_drawListPerfMarker = new ProfilerMarker("DearImGui.RenderDrawLists");
 
-        void Awake() {
+        private void Awake() {
             context = ImGuiUnity.CreateUnityContext();
         }
 
-        void OnDestroy() {
+        private void OnDestroy() {
             ImGuiUnity.DestroyUnityContext(context);
         }
 
-        void OnEnable() {
-            usingURP = RenderUtils.IsUsingURP();
+        private void OnEnable() {
             if (guiCamera == null) {
                 Fail(nameof(guiCamera));
             }
 
+            usingURP = RenderUtils.IsUsingURP();
             if (renderFeature == null && usingURP) {
                 Fail(nameof(renderFeature));
             }
@@ -71,6 +74,11 @@ namespace ImGuiNET.Unity {
             ImGuiUnity.SetUnityContext(context);
             ImGuiIOPtr io = ImGui.GetIO();
 
+            for (int i = 0, count = fontList.Count; i < count; i++) {
+                string mainFontPath = AssetDatabase.GetAssetPath(fontList[i]);
+                ImFontPtr font = io.Fonts.AddFontFromFileTTF(mainFontPath, 13, null, io.Fonts.GetGlyphRangesChineseFull());
+            }
+
             initialConfiguration.ApplyTo(io);
             style?.ApplyTo(ImGui.GetStyle());
 
@@ -79,6 +87,7 @@ namespace ImGuiNET.Unity {
 
             SetPlatform(Platform.Create(platformType, cursorShapes, iniSettings), io);
             SetRenderer(RenderUtils.Create(rendererType, shaders, context.textures), io);
+
             if (platform == null) {
                 Fail(nameof(platform));
             }
@@ -94,7 +103,7 @@ namespace ImGuiNET.Unity {
             }
         }
 
-        void OnDisable() {
+        private void OnDisable() {
             ImGuiUnity.SetUnityContext(context);
             ImGuiIOPtr io = ImGui.GetIO();
 
@@ -123,20 +132,17 @@ namespace ImGuiNET.Unity {
             cmd = null;
         }
 
-        void Reset()
-        {
+        private void Reset() {
             guiCamera = Camera.main;
             initialConfiguration.SetDefaults();
         }
 
-        public void Reload()
-        {
+        public void Reload() {
             OnDisable();
             OnEnable();
         }
 
-        void Update()
-        {
+        private void Update() {
             ImGuiUnity.SetUnityContext(context);
             ImGuiIOPtr io = ImGui.GetIO();
 
@@ -147,14 +153,13 @@ namespace ImGuiNET.Unity {
             s_prepareFramePerfMarker.End();
 
             s_layoutPerfMarker.Begin(this);
-            try
-            {
-                if (doGlobalLayout)
+            try {
+                if (doGlobalLayout) {
                     ImGuiUnity.DoLayout();   // ImGuiUn.Layout: global handlers
+                }
+
                 Layout?.Invoke();     // this.Layout: handlers specific to this instance
-            }
-            finally
-            {
+            } finally {
                 ImGui.Render();
                 s_layoutPerfMarker.End();
             }
@@ -165,15 +170,13 @@ namespace ImGuiNET.Unity {
             s_drawListPerfMarker.End();
         }
 
-        void SetRenderer(IImGuiRenderer renderer, ImGuiIOPtr io)
-        {
+        private void SetRenderer(IImGuiRenderer renderer, ImGuiIOPtr io) {
             guiRenderer?.Shutdown(io);
             guiRenderer = renderer;
             guiRenderer?.Initialize(io);
         }
 
-        void SetPlatform(IImGuiPlatform platform, ImGuiIOPtr io)
-        {
+        private void SetPlatform(IImGuiPlatform platform, ImGuiIOPtr io) {
             this.platform?.Shutdown(io);
             this.platform = platform;
             this.platform?.Initialize(io);
