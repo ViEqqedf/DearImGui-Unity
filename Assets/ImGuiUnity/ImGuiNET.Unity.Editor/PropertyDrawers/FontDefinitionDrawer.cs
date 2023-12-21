@@ -22,7 +22,7 @@ namespace ImGuiNET.Unity.Editor {
         }
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
-            var fontAsset = property.FindPropertyRelative("_fontAsset");
+            var fontAsset = property.FindPropertyRelative("fontAsset");
             var fontPath = property.FindPropertyRelative(nameof(FontDefinition.FontPath));
             var config = property.FindPropertyRelative(nameof(FontDefinition.Config));
 
