@@ -16,7 +16,6 @@ namespace ImGuiNET.Unity.Editor
         private SerializedProperty platform;
 
         private SerializedProperty initialConfiguration;
-        private SerializedProperty fontList;
         private SerializedProperty fontAtlasConfiguration;
         private SerializedProperty iniSettings;
 
@@ -33,7 +32,6 @@ namespace ImGuiNET.Unity.Editor
             rendererType = serializedObject.FindProperty("rendererType");
             platform = serializedObject.FindProperty("platformType");
             initialConfiguration = serializedObject.FindProperty("initialConfiguration");
-            fontList = serializedObject.FindProperty("fontList");
             fontAtlasConfiguration = serializedObject.FindProperty("fontAtlasConfiguration");
             iniSettings = serializedObject.FindProperty("iniSettings");
             shaders = serializedObject.FindProperty("shaders");
@@ -58,7 +56,6 @@ namespace ImGuiNET.Unity.Editor
             EditorGUILayout.PropertyField(rendererType);
             EditorGUILayout.PropertyField(platform);
             EditorGUILayout.PropertyField(initialConfiguration);
-            EditorGUILayout.PropertyField(fontList);
             EditorGUILayout.PropertyField(fontAtlasConfiguration);
             EditorGUILayout.PropertyField(iniSettings);
             EditorGUILayout.PropertyField(shaders);

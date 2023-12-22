@@ -31,7 +31,6 @@ namespace ImGuiNET.Unity {
 
         [Header("Configuration")]
         [SerializeField] private IOConfig initialConfiguration = default;
-        [SerializeField] private List<Object> fontList;
         [SerializeField] private FontAtlasConfigAsset fontAtlasConfiguration = null;
         [SerializeField] private IniSettingsAsset iniSettings = null;  // null: uses default imgui.ini file
 
@@ -74,10 +73,8 @@ namespace ImGuiNET.Unity {
             ImGuiUnity.SetUnityContext(context);
             ImGuiIOPtr io = ImGui.GetIO();
 
-            for (int i = 0, count = fontList.Count; i < count; i++) {
-                string mainFontPath = AssetDatabase.GetAssetPath(fontList[i]);
-                ImFontPtr font = io.Fonts.AddFontFromFileTTF(mainFontPath, 13, null, io.Fonts.GetGlyphRangesChineseFull());
-            }
+            string mainFontPath = $"{Application.dataPath}/Resources/Fonts/MSYHMONO.ttf";
+            ImFontPtr font = io.Fonts.AddFontFromFileTTF(mainFontPath, 13, null, io.Fonts.GetGlyphRangesChineseFull());
 
             initialConfiguration.ApplyTo(io);
             style?.ApplyTo(ImGui.GetStyle());

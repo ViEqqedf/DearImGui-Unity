@@ -18,6 +18,10 @@ namespace ImGuiNET.Unity {
             return new System.Numerics.Vector4(vec.x, vec.y, vec.z, vec.w);
         }
 
+        public static System.Numerics.Vector4 CreateSysVec4(float x, float y, float z, float w) {
+            return new System.Numerics.Vector4(x, y, z, w);
+        }
+
         public static Vector4 CreateUnityVec4(System.Numerics.Vector4 vec) {
             return new Vector4(vec.X, vec.Y, vec.Z, vec.W);
         }
