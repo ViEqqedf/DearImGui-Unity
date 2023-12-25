@@ -73,7 +73,7 @@ namespace ImGuiNET.Unity {
             ImGuiUnity.SetUnityContext(context);
             ImGuiIOPtr io = ImGui.GetIO();
 
-            string mainFontPath = $"{Application.dataPath}/Resources/Fonts/MSYHMONO.ttf";
+            string mainFontPath = $"{Application.dataPath}/ImGuiUnity/Fonts/MSYHMONO.ttf";
             ImFontPtr font = io.Fonts.AddFontFromFileTTF(mainFontPath, 13, null, io.Fonts.GetGlyphRangesChineseFull());
 
             initialConfiguration.ApplyTo(io);
